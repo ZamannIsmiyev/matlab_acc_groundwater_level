@@ -10,16 +10,11 @@ function welllog(filename,pre_time,break_time0,break_time1,break_time2,break_tim
 % 2020-10-19: Use LTA/STA to detect the main stream
 % Usage of the function
 %   - filename: input data file name (xlsfile)
-%
-%   - break_time0: starttime of velocity signal break (use to corretion)
-%   - break_time1: endtime of velocity signal break (use to corretion)
-%   - break_time2: starttime of displacement signal break (use to corretion)
-%   - break_time3: starttime of displacement signal break (use to corretion)
-%   At 1st run, set all break_time = 0; pick the time range and re-run
+%   - break_time0: starttime of 
 %%
-%close all; clear all; clc;
-%break_time0=0;break_time1=0;break_time2=66;break_time3=250;
-%filename = 'Ylan-Well.xlsx';
+close all; clear all; clc;
+break_time0=0;break_time1=0;break_time2=66;break_time3=250;
+filename = 'Ylan-Well.xlsx';
 data = xlsread(filename,1);
 t = data(:,1); t = t'; % Time
 % I wrote other function called convert_data(time,data,which_cv)
@@ -44,7 +39,7 @@ az = data(:,4); az = az'; % UD component series
          pon=pon1;
          poff=poff1;
      end
-     id = t>=((pon*dt)-pre_time) & t<=(poff*dt); % detect the time of the main signals
+     id = t>=(pon*dt) & t<=(poff*dt); % detect the time of the main signals
      An = an(id);
      Ae = ae(id);
      Az = az(id);
