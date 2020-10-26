@@ -1,5 +1,5 @@
 %function welllog(filename,pre_time,break_time0,break_time1,break_time2,break_time3)
-function welllog(filename,pre_time,break_time0,break_time1,break_time2,break_time3)
+function welllog(filename,pre_time,break_time0,break_time1,break_time2,break_time3,wflag)
 % 2020-10-10:
 % Load the acceleration data -> Convert to velocity and displacement
 % Compare the converted signal with water lelvel
@@ -16,11 +16,17 @@ function welllog(filename,pre_time,break_time0,break_time1,break_time2,break_tim
 %   - break_time2: starttime of displacement signal break (use to corretion)
 %   - break_time3: starttime of displacement signal break (use to corretion)
 %   At 1st run, set all break_time = 0; pick the time range and re-run
+% 2020-10-26: Add the option to write out the converted data by "wflag";
+% Assum that input data is acceleration and output data are velocity and
+% displacement data.
 %%
 %close all; clear all; clc;
-%break_time0=0;break_time1=0;break_time2=66;break_time3=250;
-%filename = 'Ylan-Well.xlsx';
+%pre_time = 5;
+%break_time0=0;break_time1=0;break_time2=0;break_time3=0;
+%filename = 'Liujia-Well.xlsx';
 data = xlsread(filename,1);
+vout = [];
+dout = [];
 t = data(:,1); t = t'; % Time
 % I wrote other function called convert_data(time,data,which_cv)
 dt = (t(end)-t(1))/(length(t)-1);
@@ -66,6 +72,7 @@ vn = convert_data(t,an,'a2v');
 Ve = convert_data(T,Ae,'a2v');
 Vz = convert_data(T,Az,'a2v');
 Vn = convert_data(T,An,'a2v');
+
 %detrend
 ve = detrend(ve,1,brkpt);
 vn = detrend(vn,1,brkpt);
@@ -87,6 +94,35 @@ De = detrend(De,1,brkpt1);
 Dz = detrend(Dz,1,brkpt1);
 Dn = detrend(Dn,1,brkpt1);
 
+%% Write the converted data out
+if (wflag=='y')| (wflag=='Y')
+vout = [vout T' Ve' Vn' Vz']; % velocity data
+dout = [dout T' De' Dn' Dz']; % displacement data
+vfn = strcat(filename(1:end-5),"-vel.xlsx");
+%disp(vfn)
+dfn = strcat(filename(1:end-5),"-dis.xlsx");
+%disp(dfn)
+%
+checkforfile=exist((vfn),'file');
+%disp(vfn)
+if checkforfile==1; % if not create new one
+    disp(["remove old file:",vfn])
+    delete vfn
+end
+disp(['Write data to file as "time - E - N - Z" into file', vfn])
+xlswrite(vfn,vout,1);
+%else % if yes, count the number of previous inputs
+%disp(["remove old file:",vfn])
+%delete vfn
+%disp(["Write data to file:",vfn])
+%xlswrite(vfn,vout,1);
+%end
+%
+disp(['Write data to file as "time - E - N - Z" into file', dfn])
+xlswrite(dfn,dout,1);
+else
+    disp('Not write out the data')
+end
 %% Plot section
 % Here I used the filename to made the figure title
 h = figure('Name',filename([1:end-5]),'Numbertitle','off',...
@@ -273,4 +309,4 @@ legend('Ground motion','Main signal selected by LTA/STA','GWL variation','Locati
 %
 print('-dtiff','-r100',[filename([1:end-5]),'.tiff'])
 %close(h);
-%end
+end
